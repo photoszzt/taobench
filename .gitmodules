@@ -1,0 +1,4 @@
+[submodule "third_party/libpqxx"]
+	path = third-party/libpqxx
+	url = https://github.com/jtv/libpqxx.git
+	ignore = dirty
