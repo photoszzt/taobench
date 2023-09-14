@@ -1,0 +1,72 @@
+# https://taskfile.dev
+
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  install_deps:
+    desc: "install package deps"
+    cmds:
+      - sudo apt-get install -y libmysqlclient-dev libpq-dev postgresql
+
+  libpqxx_gcc:
+    cmds:
+      - cd third-party/libpqxx && mkdir -p {{.TASKFILE_DIR}}/third-party/deps_gcc &&
+        mkdir -p gcc_release && cd gcc_release &&
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=23
+        -DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12 
+        -DCMAKE_INSTALL_PREFIX={{.TASKFILE_DIR}}/third-party/deps_gcc .. &&
+        make -j && make install
+    sources:
+      - third-party/libpqxx/src/*.cxx
+    generates:
+      - third-party/deps_gcc/lib/libpqxx.a
+
+  libpqxx_clang:
+    cmds:
+      - cd third-party/libpqxx && mkdir -p {{.TASKFILE_DIR}}/third-party/deps_clang &&
+        mkdir -p clang_release && cd clang_release &&
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=23
+        -DCMAKE_C_COMPILER=clang-15 -DCMAKE_CXX_COMPILER=clang++-15 
+        -DCMAKE_INSTALL_PREFIX={{.TASKFILE_DIR}}/third-party/deps_clang .. &&
+        make -j && make install
+    sources:
+      - third-party/libpqxx/src/*.cxx
+    generates:
+      - third-party/deps_clang/lib/libpqxx.a
+
+  crdb_gcc_release:
+    deps: [libpqxx_gcc]
+    cmds:
+      - mkdir -p build/crdb_gcc_release && cd build/crdb_gcc_release && 
+        cmake -DWITH_CRDB=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17
+        -DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12 ../.. &&
+        make -j
+
+  crdb_clang_release:
+    deps: [libpqxx_clang]
+    cmds:
+      - mkdir -p build/crdb_clang_release && cd build/crdb_clang_release && 
+        cmake -DWITH_CRDB=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=23
+        -DCMAKE_C_COMPILER=clang-15 -DCMAKE_CXX_COMPILER=clang++-15 ../.. &&
+        make -j
+
+  mysql_gcc_release:
+    cmds:
+      - mkdir -p build/mysql_gcc_release && cd build/mysql_gcc_release &&
+        cmake -DWITH_MYSQL=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=23
+        -DCMAKE_C_COMPILER=gcc-12 -DCMAKE_CXX_COMPILER=g++-12 ../.. &&
+        make -j
+
+  mysql_clang_release:
+    cmds:
+      - mkdir -p build/mysql_clang_release && cd build/mysql_clang_release &&
+        cmake -DWITH_MYSQL=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=23
+        -DCMAKE_C_COMPILER=clang-15 -DCMAKE_CXX_COMPILER=clang++-15 ../.. &&
+        make -j
+
+  all:
+    deps: [mysql_clang_release, mysql_gcc_release, crdb_clang_release, crdb_gcc_release]

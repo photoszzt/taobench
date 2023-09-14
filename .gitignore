@@ -44,3 +44,6 @@
 **/compile_commands.json
 .task/
 third-party/deps/
+third-party/deps_clang/
+third-party/deps_gcc/
+

@@ -21,8 +21,17 @@ if(WITH_CRDB)
   target_sources(taobench PRIVATE
     crdb/crdb_db.h
     crdb/crdb_db.cc)
-  target_link_libraries(taobench -lpqxx)
-  target_link_libraries(taobench -lpq)
+if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
+  target_include_directories(taobench PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/third-party/deps_clang/include;>")
+  find_library(PQXX_LIB NAMES pqxx HINTS ${CMAKE_CURRENT_SOURCE_DIR}/third-party/deps_clang/lib)
+elseif (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+  target_include_directories(taobench PUBLIC 
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/third-party/deps_gcc/include;>")
+  find_library(PQXX_LIB NAMES pqxx HINTS ${CMAKE_CURRENT_SOURCE_DIR}/third-party/deps_gcc/lib)
+endif()
+  target_link_libraries(taobench PQXX_LIB)
+  target_link_libraries(taobench pq)
 endif()
 
 if(WITH_MYSQL)
