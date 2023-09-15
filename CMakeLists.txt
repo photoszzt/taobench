@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.7)
 
 project(taobench)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_COMPILER "g++-11")
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_COMPILER "g++-12")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
@@ -30,7 +30,7 @@ elseif (CMAKE_C_COMPILER_ID STREQUAL "GNU")
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/third-party/deps_gcc/include;>")
   find_library(PQXX_LIB NAMES pqxx HINTS ${CMAKE_CURRENT_SOURCE_DIR}/third-party/deps_gcc/lib)
 endif()
-  target_link_libraries(taobench PQXX_LIB)
+  target_link_libraries(taobench ${PQXX_LIB})
   target_link_libraries(taobench pq)
 endif()
 
